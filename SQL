@@ -1,0 +1,578 @@
+# A - Criação das tabelas e cadastro (10 registros em cada)
+
+sql
+-- Criação das tabelas (SQL Server)
+CREATE TABLE Departamento (
+  DepartamentoID int IDENTITY(1,1) PRIMARY KEY,
+  Nome varchar(100) NOT NULL
+);
+
+CREATE TABLE Projeto (
+  ProjetoID int IDENTITY(1,1) PRIMARY KEY,
+  DepartamentoID int NULL,
+  Nome varchar(100),
+  CONSTRAINT FK_Projeto_Departamento FOREIGN KEY (DepartamentoID) REFERENCES Departamento(DepartamentoID)
+);
+
+CREATE TABLE Funcionario (
+  FuncionarioID int IDENTITY(1,1) PRIMARY KEY,
+  CPF char(11) NOT NULL UNIQUE,
+  Nome varchar(100) NOT NULL,
+  DataNascimento date NULL,
+  Sexo char(1) NULL
+);
+
+CREATE TABLE Dependente (
+  DependenteID int IDENTITY(1,1) PRIMARY KEY,
+  FuncionarioID int NOT NULL,
+  CPF char(11) NOT NULL UNIQUE,
+  Nome varchar(100),
+  DataNascimento date NULL,
+  Sexo char(1) NULL,
+  CONSTRAINT FK_Dependente_Funcionario FOREIGN KEY (FuncionarioID) REFERENCES Funcionario(FuncionarioID)
+);
+
+CREATE TABLE TrabalhaProjeto (
+  ProjetoID int NOT NULL,
+  FuncionarioID int NOT NULL,
+  QtdHoras numeric(12,2) NULL,
+  CONSTRAINT PK_TrabalhaProjeto PRIMARY KEY (ProjetoID, FuncionarioID),
+  CONSTRAINT FK_TrabalhaProjeto_Projeto FOREIGN KEY (ProjetoID) REFERENCES Projeto(ProjetoID),
+  CONSTRAINT FK_TrabalhaProjeto_Funcionario FOREIGN KEY (FuncionarioID) REFERENCES Funcionario(FuncionarioID)
+);
+
+
+sql
+-- Inserções: 10 departamentos
+INSERT INTO Departamento (Nome) VALUES 
+('Recursos Humanos'),('Financeiro'),('TI'),('Marketing'),('Comercial'),
+('Produção'),('Pesquisa e Desenvolvimento'),('Jurídico'),('Suprimentos'),('Logística');
+
+-- Inserções: 10 projetos (associando departamentos 1..10)
+INSERT INTO Projeto (DepartamentoID, Nome) VALUES
+(1,'Projeto RH 1'),(2,'Projeto Financeiro A'),(3,'Infraestrutura TI'),(4,'Campanha 2025'),
+(5,'Comercial Norte'),(6,'Otimização Produção'),(7,'R&D Produto X'),(8,'Compliance Legal'),
+(9,'Compra Materiais'),(10,'Logística Regional');
+
+-- Inserções: 10 funcionários
+INSERT INTO Funcionario (CPF, Nome, DataNascimento, Sexo) VALUES
+('11111111111','Marcos Almeida','1985-04-12','M'),
+('22222222222','Mariana Silva','1990-08-20','F'),
+('33333333333','Mateus Costa','1992-02-05','M'),
+('44444444444','Marcia Souza','1988-12-01','F'),
+('55555555555','Miguel Oliveira','1983-07-30','M'),
+('66666666666','Monica Pereira','1995-11-15','F'),
+('77777777777','Rafael Santos','1991-03-22','M'),
+('88888888888','Ana Rodrigues','1987-05-17','F'),
+('99999999999','Lucas Ferreira','1994-09-09','M'),
+('10101010101','Beatriz Gomes','1993-01-25','F');
+
+-- Inserções: 10 dependentes (associando FuncionarioID = 1..10)
+INSERT INTO Dependente (FuncionarioID, CPF, Nome, DataNascimento, Sexo) VALUES
+(1,'21111111111','Pedro Almeida','2010-06-10','M'),
+(2,'22221111111','Laura Silva','2012-09-05','F'),
+(3,'23331111111','Caio Costa','2008-11-20','M'),
+(4,'24441111111','Isabela Souza','2014-02-14','F'),
+(5,'25551111111','Gabriel Oliveira','2006-03-03','M'),
+(6,'26661111111','Marina Pereira','2011-07-07','F'),
+(7,'27771111111','Sofia Santos','2015-12-12','F'),
+(8,'28881111111','Mateo Rodrigues','2009-04-04','M'),
+(9,'29991111111','Helena Ferreira','2013-08-08','F'),
+(10,'30001111111','Laura Gomes','2007-10-10','F');
+
+-- Inserções: 10 linhas em TrabalhaProjeto
+INSERT INTO TrabalhaProjeto (ProjetoID, FuncionarioID, QtdHoras) VALUES
+(1,1,120.00),(1,2,80.50),(2,3,200.00),(3,4,150.25),(4,5,100.00),
+(5,6,60.00),(6,7,95.75),(7,8,40.00),(8,9,30.00),(9,10,12.50);
+
+
+ B - Cadastro e Atualização (apenas número e comando executado)
+
+1.
+
+sql
+INSERT INTO Funcionario (CPF, Nome, DataNascimento, Sexo) VALUES ('12121212121','José Teste',NULL,NULL);
+
+
+2.
+
+sql
+UPDATE Funcionario SET Nome = 'José Silva' WHERE CPF = '12121212121';
+
+
+3.
+
+sql
+DELETE FROM Funcionario WHERE CPF = '12121212121';
+
+
+4.
+
+sql
+UPDATE Funcionario SET Nome = 'José Brasileiro', DataNascimento = '1979-11-23' WHERE FuncionarioID = 60007;
+
+
+5.
+
+sql
+SELECT * FROM Funcionario;
+
+
+6.
+
+sql
+SELECT Nome, CPF FROM Funcionario;
+
+
+7.
+
+sql
+SELECT * FROM Funcionario WHERE Sexo = 'F';
+
+
+8.
+
+sql
+SELECT * FROM Funcionario WHERE Sexo = 'M';
+
+
+9.
+
+sql
+SELECT * FROM Dependente WHERE Sexo = 'M';
+
+
+10.
+
+sql
+SELECT * FROM Funcionario WHERE Nome LIKE 'M%';
+
+
+11.
+
+sql
+SELECT * FROM Dependente WHERE Nome LIKE 'P%';
+
+
+12.
+
+sql
+SELECT * FROM Funcionario WHERE Nome LIKE '%Cruz%';
+
+
+13.
+
+sql
+SELECT * FROM Dependente
+WHERE RIGHT(Nome, CHARINDEX(' ', REVERSE(Nome) + ' ') - 1) = 'Cruz';
+
+
+14.
+
+sql
+SELECT TOP 1 tp.ProjetoID, p.Nome, SUM(ISNULL(tp.QtdHoras,0)) AS TotalHoras
+FROM TrabalhaProjeto tp
+JOIN Projeto p ON tp.ProjetoID = p.ProjetoID
+GROUP BY tp.ProjetoID, p.Nome
+ORDER BY TotalHoras ASC;
+
+
+15.
+
+sql
+SELECT tp.ProjetoID, p.Nome, AVG(ISNULL(tp.QtdHoras,0)) AS MediaHoras
+FROM TrabalhaProjeto tp
+JOIN Projeto p ON tp.ProjetoID = p.ProjetoID
+GROUP BY tp.ProjetoID, p.Nome;
+
+
+16.
+
+sql
+SELECT Sexo, COUNT(*) AS Quantidade FROM Funcionario GROUP BY Sexo;
+
+
+17.
+
+sql
+SELECT TOP 2 * FROM Funcionario
+WHERE DataNascimento IS NOT NULL
+ORDER BY DataNascimento ASC;
+
+
+18.
+
+sql
+SELECT FuncionarioID, Nome, DataNascimento, Sexo
+FROM (
+  SELECT f.*,
+         ROW_NUMBER() OVER (PARTITION BY Sexo ORDER BY DataNascimento DESC) AS rn
+  FROM Funcionario f
+  WHERE DataNascimento IS NOT NULL
+) t
+WHERE rn <= 3
+ORDER BY Sexo, DataNascimento DESC;
+
+19.
+
+sql
+SELECT d.DependenteID, d.Nome AS DependenteNome, f.Nome AS FuncionarioNome
+FROM Dependente d
+JOIN Funcionario f ON d.FuncionarioID = f.FuncionarioID;
+
+
+20.
+
+sql
+SELECT f.FuncionarioID, f.Nome, tp.ProjetoID
+FROM Funcionario f
+JOIN TrabalhaProjeto tp ON f.FuncionarioID = tp.FuncionarioID;
+
+
+21.
+
+sql
+SELECT p.ProjetoID, p.Nome AS ProjetoNome, d.Nome AS DepartamentoNome, f.FuncionarioID, f.Nome AS FuncionarioNome
+FROM Projeto p
+LEFT JOIN Departamento d ON p.DepartamentoID = d.DepartamentoID
+JOIN TrabalhaProjeto tp ON p.ProjetoID = tp.ProjetoID
+JOIN Funcionario f ON tp.FuncionarioID = f.FuncionarioID;
+
+
+22.
+
+sql
+SELECT f.FuncionarioID, f.Nome
+FROM Funcionario f
+LEFT JOIN Dependente d ON f.FuncionarioID = d.FuncionarioID
+WHERE d.DependenteID IS NULL;
+
+
+23.
+
+sql
+SELECT f.FuncionarioID, f.Nome, COUNT(d.DependenteID) AS QuantidadeDependentes
+FROM Funcionario f
+JOIN Dependente d ON f.FuncionarioID = d.FuncionarioID
+GROUP BY f.FuncionarioID, f.Nome;
+
+
+24.
+
+sql
+SELECT f.FuncionarioID, f.Nome, ISNULL(SUM(tp.QtdHoras),0) AS TotalHoras
+FROM Funcionario f
+LEFT JOIN TrabalhaProjeto tp ON f.FuncionarioID = tp.FuncionarioID
+GROUP BY f.FuncionarioID, f.Nome;
+
+
+25.
+
+sql
+SELECT f.FuncionarioID, f.Nome, COUNT(d.DependenteID) AS QtdeDependentes
+FROM Funcionario f
+LEFT JOIN Dependente d ON f.FuncionarioID = d.FuncionarioID
+GROUP BY f.FuncionarioID, f.Nome;
+
+
+26.
+
+sql
+SELECT dep.DepartamentoID, dep.Nome AS DepartamentoNome, ISNULL(SUM(tp.QtdHoras),0) AS TotalHoras
+FROM Departamento dep
+LEFT JOIN Projeto p ON dep.DepartamentoID = p.DepartamentoID
+LEFT JOIN TrabalhaProjeto tp ON p.ProjetoID = tp.ProjetoID
+GROUP BY dep.DepartamentoID, dep.Nome;
+
+
+27.
+
+sql
+SELECT dep.DepartamentoID, dep.Nome
+FROM Departamento dep
+LEFT JOIN Projeto p ON dep.DepartamentoID = p.DepartamentoID
+WHERE p.ProjetoID IS NULL;
+
+
+28.
+
+sql
+SELECT f.FuncionarioID, f.Nome
+FROM Funcionario f
+LEFT JOIN Dependente d ON f.FuncionarioID = d.FuncionarioID
+WHERE d.DependenteID IS NULL;
+
+29.
+
+sql
+SELECT MONTH(DataNascimento) AS Mes, COUNT(*) AS Quantidade
+FROM Funcionario
+WHERE DataNascimento IS NOT NULL
+GROUP BY MONTH(DataNascimento)
+ORDER BY Mes;
+
+
+30.
+
+sql
+SELECT YEAR(DataNascimento) AS Ano, MONTH(DataNascimento) AS Mes, COUNT(*) AS Quantidade
+FROM Funcionario
+WHERE DataNascimento IS NOT NULL
+GROUP BY YEAR(DataNascimento), MONTH(DataNascimento)
+ORDER BY Ano, Mes;
+
+
+31.
+
+sql
+SELECT Nome,
+       (DATEDIFF(year, DataNascimento, GETDATE())
+        - CASE
+            WHEN (MONTH(GETDATE()) < MONTH(DataNascimento))
+              OR (MONTH(GETDATE()) = MONTH(DataNascimento) AND DAY(GETDATE()) < DAY(DataNascimento))
+            THEN 1 ELSE 0
+          END) AS Idade
+FROM Funcionario
+WHERE DataNascimento IS NOT NULL;
+
+
+32.
+
+sql
+CREATE VIEW vw_Funcionarios AS
+SELECT FuncionarioID, Nome, DataNascimento
+FROM Funcionario;
+
+
+33.
+
+sql
+CREATE VIEW vw_ProjetosPorFaixaIdade AS
+SELECT Faixa, COUNT(DISTINCT ProjetoID) AS QtdeProjetos
+FROM (
+  SELECT tp.ProjetoID,
+         CASE
+           WHEN (DATEDIFF(year, f.DataNascimento, GETDATE())
+                 - CASE WHEN (MONTH(GETDATE()) < MONTH(f.DataNascimento))
+                            OR (MONTH(GETDATE()) = MONTH(f.DataNascimento) AND DAY(GETDATE()) < DAY(f.DataNascimento))
+                        THEN 1 ELSE 0 END) <= 25 THEN 'Até 25'
+           WHEN (DATEDIFF(year, f.DataNascimento, GETDATE())
+                 - CASE WHEN (MONTH(GETDATE()) < MONTH(f.DataNascimento))
+                            OR (MONTH(GETDATE()) = MONTH(f.DataNascimento) AND DAY(GETDATE()) < DAY(f.DataNascimento))
+                        THEN 1 ELSE 0 END) BETWEEN 26 AND 45 THEN '26-45'
+           ELSE 'Acima de 45'
+         END AS Faixa
+  FROM Funcionario f
+  JOIN TrabalhaProjeto tp ON f.FuncionarioID = tp.FuncionarioID
+  WHERE f.DataNascimento IS NOT NULL
+) t
+GROUP BY Faixa;
+
+
+34.
+
+sql
+SELECT DISTINCT f.Nome AS Funcionario, d.Nome AS Departamento
+FROM Funcionario f
+JOIN TrabalhaProjeto tp ON f.FuncionarioID = tp.FuncionarioID
+JOIN Projeto p ON tp.ProjetoID = p.ProjetoID
+JOIN Departamento d ON p.DepartamentoID = d.DepartamentoID;
+
+
+35.
+
+sql
+SELECT f.FuncionarioID, f.Nome, COUNT(tp.ProjetoID) AS QtdeProjetos
+FROM Funcionario f
+JOIN TrabalhaProjeto tp ON f.FuncionarioID = tp.FuncionarioID
+GROUP BY f.FuncionarioID, f.Nome
+HAVING COUNT(tp.ProjetoID) > 1;
+
+
+36.
+
+sql
+SELECT p.ProjetoID, p.Nome, SUM(ISNULL(tp.QtdHoras,0)) AS TotalHoras
+FROM Projeto p
+JOIN TrabalhaProjeto tp ON p.ProjetoID = tp.ProjetoID
+GROUP BY p.ProjetoID, p.Nome
+HAVING SUM(ISNULL(tp.QtdHoras,0)) > 200;
+
+
+37.
+
+sql
+SELECT f.FuncionarioID, f.Nome
+FROM Funcionario f
+LEFT JOIN TrabalhaProjeto tp ON f.FuncionarioID = tp.FuncionarioID
+WHERE tp.ProjetoID IS NULL;
+
+
+38.
+
+sql
+SELECT f.FuncionarioID, f.Nome,
+       ISNULL(d.QtdeDependentes,0) AS QtdeDependentes,
+       ISNULL(h.TotalHoras,0) AS TotalHoras
+FROM Funcionario f
+LEFT JOIN (
+  SELECT FuncionarioID, COUNT(*) AS QtdeDependentes
+  FROM Dependente
+  GROUP BY FuncionarioID
+) d ON f.FuncionarioID = d.FuncionarioID
+LEFT JOIN (
+  SELECT FuncionarioID, SUM(QtdHoras) AS TotalHoras
+  FROM TrabalhaProjeto
+  GROUP BY FuncionarioID
+) h ON f.FuncionarioID = h.FuncionarioID;
+
+
+39.
+
+sql
+CREATE VIEW vw_FuncionariosProjetos AS
+SELECT f.FuncionarioID, f.Nome AS Funcionario, d.Nome AS Departamento, ISNULL(SUM(tp.QtdHoras),0) AS TotalHoras
+FROM Funcionario f
+LEFT JOIN TrabalhaProjeto tp ON f.FuncionarioID = tp.FuncionarioID
+LEFT JOIN Projeto p ON tp.ProjetoID = p.ProjetoID
+LEFT JOIN Departamento d ON p.DepartamentoID = d.DepartamentoID
+GROUP BY f.FuncionarioID, f.Nome, d.Nome;
+
+
+40.
+
+sql
+CREATE PROCEDURE sp_BuscaFuncionarioPorNome
+  @NomeParcial VARCHAR(100)
+AS
+BEGIN
+  SET NOCOUNT ON;
+  SELECT *
+  FROM Funcionario
+  WHERE Nome LIKE '%' + @NomeParcial + '%';
+END;
+
+
+41.
+
+sql
+SELECT Nome,
+       CASE
+         WHEN Idade <= 25 THEN 'Jovem'
+         WHEN Idade BETWEEN 26 AND 45 THEN 'Adulto'
+         ELSE 'Sênior'
+       END AS FaixaEtaria
+FROM (
+  SELECT Nome,
+         (DATEDIFF(year, DataNascimento, GETDATE())
+          - CASE
+              WHEN (MONTH(GETDATE()) < MONTH(DataNascimento))
+                OR (MONTH(GETDATE()) = MONTH(DataNascimento) AND DAY(GETDATE()) < DAY(DataNascimento))
+              THEN 1 ELSE 0
+            END) AS Idade
+  FROM Funcionario
+  WHERE DataNascimento IS NOT NULL
+) t;
+
+
+42.
+
+sql
+SELECT f.FuncionarioID, f.Nome,
+       ISNULL(d.QtdeDependentes,0) AS QtdeDependentes,
+       CASE WHEN p.NumProjetos IS NULL OR p.NumProjetos = 0 THEN 0
+            ELSE CAST(p.TotalHoras AS DECIMAL(12,2)) / p.NumProjetos
+       END AS MediaHorasPorProjeto
+FROM Funcionario f
+LEFT JOIN (
+  SELECT FuncionarioID, COUNT(*) AS QtdeDependentes
+  FROM Dependente
+  GROUP BY FuncionarioID
+) d ON f.FuncionarioID = d.FuncionarioID
+LEFT JOIN (
+  SELECT FuncionarioID, COUNT(ProjetoID) AS NumProjetos, SUM(QtdHoras) AS TotalHoras
+  FROM TrabalhaProjeto
+  GROUP BY FuncionarioID
+) p ON f.FuncionarioID = p.FuncionarioID;
+
+
+43.
+
+sql
+CREATE VIEW vw_TotalHorasPorFuncionarioDepartamento AS
+SELECT f.FuncionarioID, f.Nome AS Funcionario,
+       d.DepartamentoID, d.Nome AS Departamento,
+       ISNULL(SUM(tp.QtdHoras),0) AS TotalHoras
+FROM Funcionario f
+LEFT JOIN TrabalhaProjeto tp ON f.FuncionarioID = tp.FuncionarioID
+LEFT JOIN Projeto p ON tp.ProjetoID = p.ProjetoID
+LEFT JOIN Departamento d ON p.DepartamentoID = d.DepartamentoID
+GROUP BY f.FuncionarioID, f.Nome, d.DepartamentoID, d.Nome;
+
+-- Para visualizar ordenado do maior para o menor:
+SELECT * FROM vw_TotalHorasPorFuncionarioDepartamento
+ORDER BY TotalHoras DESC;
+
+44.
+
+sql
+CREATE PROCEDURE sp_ProjetosPorFuncionario
+  @FuncionarioID INT
+AS
+BEGIN
+  SET NOCOUNT ON;
+  SELECT p.ProjetoID, p.Nome AS ProjetoNome, tp.QtdHoras
+  FROM TrabalhaProjeto tp
+  JOIN Projeto p ON tp.ProjetoID = p.ProjetoID
+  WHERE tp.FuncionarioID = @FuncionarioID;
+END;
+
+
+45.
+
+sql
+CREATE PROCEDURE sp_FuncionariosPorProjeto
+  @ProjetoID INT
+AS
+BEGIN
+  SET NOCOUNT ON;
+  SELECT f.FuncionarioID, f.Nome, f.CPF, f.DataNascimento, f.Sexo, tp.QtdHoras
+  FROM TrabalhaProjeto tp
+  JOIN Funcionario f ON tp.FuncionarioID = f.FuncionarioID
+  WHERE tp.ProjetoID = @ProjetoID;
+END;
+
+
+46.
+
+sql
+CREATE PROCEDURE sp_FuncionariosNascidosApos
+  @Data date
+AS
+BEGIN
+  SET NOCOUNT ON;
+  SELECT FuncionarioID, Nome, CPF, DataNascimento, Sexo
+  FROM Funcionario
+  WHERE DataNascimento > @Data;
+END;
+
+
+47.
+
+sql
+CREATE PROCEDURE sp_AtualizaDataNascimento
+  @FuncionarioID INT,
+  @NovaData date
+AS
+BEGIN
+  SET NOCOUNT ON;
+  UPDATE Funcionario
+  SET DataNascimento = @NovaData
+  WHERE FuncionarioID = @FuncionarioID;
+
+  -- retornar o registro atualizado
+  SELECT FuncionarioID, Nome, CPF, DataNascimento, Sexo
+  FROM Funcionario
+  WHERE FuncionarioID = @FuncionarioID;
+END;
+
